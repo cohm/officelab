@@ -11,6 +11,26 @@ model_list:
       model: ollama_chat/qwen3.6:35b
       api_base: http://100.112.104.107:11434
       think: true
+  - model_name: gemma4-31b
+    litellm_params:
+      model: ollama_chat/gemma4:31b
+      think: false
+      api_base: http://100.112.104.107:11434
+  - model_name: gemma4-31b-think
+    litellm_params:
+      model: ollama_chat/gemma4:31b
+      think: true
+      api_base: http://100.112.104.107:11434
+  - model_name: gemma4-26b
+    litellm_params:
+      model: ollama_chat/gemma4:26b
+      think: false
+      api_base: http://100.112.104.107:11434
+  - model_name: gemma4-26b-think
+    litellm_params:
+      model: ollama_chat/gemma4:26b
+      think: true
+      api_base: http://100.112.104.107:11434
   # OpenRouter — wildcard passthrough: call any model as openrouter/<slug>
   - model_name: openrouter/*
     litellm_params:

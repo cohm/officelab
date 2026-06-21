@@ -1,0 +1,19 @@
+[Unit]
+Description=Academic Performance Portal (Next.js)
+After=network-online.target postgresql.service
+Wants=network-online.target 
+
+[Service]
+Type=simple
+User=portaladmin
+WorkingDirectory=/opt/portal
+# Bind on the vmbr1 interface so Caddy on webapps can reach it; no public IP exists.
+Environment=PORT=3000
+Environment=HOSTNAME=0.0.0.0
+# .env (DATABASE_URL, JWT_SECRET, PII_ENCRYPTION_KEY, NODE_ENV, …) is loaded by Next
+# from /opt/portal/.env automatically.
+ExecStart=/opt/portal/node_modules/.bin/next start -H 0.0.0.0 -p 3000
+Restart=on-failure
+RestartSec=5
+[Install]
+WantedBy=multi-user.target

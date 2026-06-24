@@ -1,0 +1,54 @@
+services:
+  bot:
+    build:
+      context: .
+      args:
+        STUDENT_BOT_VERSION: ${STUDENT_BOT_VERSION:-}
+    image: student-bot:latest
+    container_name: student-bot
+    restart: unless-stopped
+    env_file: .env
+    environment:
+      OLLAMA_URL: http://host.docker.internal:11434
+      # config.yaml paths are relative to project root (STUDENT_BOT_ROOT).
+      STUDENT_BOT_ROOT: /app
+    extra_hosts:
+      # On macOS, host.docker.internal already resolves; keep this for Linux parity.
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      # ./data holds dictionary.json, dictionary_proposals.json, logs.sqlite, chroma/, web_users.
+      # The Dockerfile COPY of data/dictionary.json is a fallback for `docker run` without compose;
+      # this directory mount overrides it.
+      - ./data:/app/data
+      # Corpus → /app/docs/corpus (paths.docs_dir in config.yaml). Override host path via CORPUS_HOST_PATH in .env
+      - ${CORPUS_HOST_PATH:-./docs/corpus}:/app/docs/corpus:ro
+    # Override the default to (re)index instead of running the bot:
+    #   docker compose run --rm bot python -m scripts.reindex
+
+  # Beta web UI (authenticated). Start alone: docker compose up -d beta-web
+  beta-web:
+    build:
+      context: .
+      args:
+        STUDENT_BOT_VERSION: ${STUDENT_BOT_VERSION:-}
+    image: student-bot:latest
+    container_name: student-bot-beta-web
+    restart: unless-stopped
+    env_file: .env
+    command: ["student-bot-web"]
+    environment:
+      OLLAMA_URL: http://host.docker.internal:11434
+      # config.yaml paths are relative to project root (STUDENT_BOT_ROOT).
+      STUDENT_BOT_ROOT: /app
+      WEB_BIND_HOST: "0.0.0.0"
+      WEB_AUTH_ENABLED: "true"
+      WEB_BASE_PATH: ""
+    ports:
+      - "127.0.0.1:8000:8000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+      - ./data:/app/data
+      - ${CORPUS_HOST_PATH:-./docs/corpus}:/app/docs/corpus:ro
